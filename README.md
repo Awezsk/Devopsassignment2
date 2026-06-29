@@ -1,6 +1,6 @@
 # DevOps Assignment 2 — Complete Documentation
 
-**Student:** Awez SK
+**Name:** Awez SK
 **GitHub:** [Awezsk/Devopsassignment2](https://github.com/Awezsk/Devopsassignment2)
 **Docker Hub:** awezsk
 **EC2 Instance:** 18.234.150.115 (Ubuntu 22.04, t2.micro, AWS Free Tier)
