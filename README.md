@@ -43,9 +43,6 @@ Developer (Laptop)
 - Storage: 16 GB gp3 EBS volume
 - Added 2 GB swap space for RAM relief on t2.micro
 
-### Screenshot
-<!-- SS: EC2 instance running, showing Public IPv4: 18.234.150.115 -->
-
 ---
 
 ## Part 1 — Docker Fundamentals
@@ -77,10 +74,15 @@ docker run -d -p 8081:80 --name myapp-container myapp:v1
 ```
 > Note: Port 8081 used instead of 8080 because 8080 was already occupied on the laptop.
 
-### Screenshot
-<!-- SS: Browser showing "Welcome to DevOps Training" at localhost:8081 -->
-<!-- SS: docker images output showing myapp:v1 -->
-<!-- SS: docker ps output showing myapp-container running -->
+### Screenshots
+
+**Docker build — image created:**
+
+![Part 1 Docker create](https://raw.githubusercontent.com/Awezsk/Devopsassignment2/main/part1-Docker%20create.png)
+
+**Docker run — container running locally:**
+
+![Part 1 Docker run locally](https://raw.githubusercontent.com/Awezsk/Devopsassignment2/main/part1%205Docker%20run%20locally.png)
 
 ### Q&A
 
@@ -116,9 +118,8 @@ docker logs myapp-container      # view container logs
 ```
 
 ### Screenshot
-<!-- SS: docker ps output -->
-<!-- SS: docker stop and docker start output -->
-<!-- SS: docker logs output -->
+
+![Part 2 Docker Operations](https://raw.githubusercontent.com/Awezsk/Devopsassignment2/main/part2%20Docker%20oprations-1.png)
 
 ### Q&A
 
@@ -152,8 +153,8 @@ docker run -it --name vol-test2 -v myvolume:/data alpine sh
 ```
 
 ### Screenshot
-<!-- SS: First container writing file to volume -->
-<!-- SS: Second container reading the same file from volume -->
+
+![Part 3 Docker Volumes](https://raw.githubusercontent.com/Awezsk/Devopsassignment2/main/part3%20Docker%20volumes.png)
 
 ### Q&A
 
@@ -181,7 +182,8 @@ docker exec c1 ping -c 3 c2    # resolves "c2" by name
 ```
 
 ### Screenshot
-<!-- SS: docker exec c1 ping c2 showing successful name resolution -->
+
+![Part 4 Docker Networking](https://raw.githubusercontent.com/Awezsk/Devopsassignment2/main/Part4-Docker%20networking%20task.png)
 
 ### Q&A
 
@@ -210,7 +212,7 @@ sudo apt install -y docker.io
 sudo systemctl enable docker --now
 sudo usermod -aG docker ubuntu
 
-# Jenkins (using 2026 key — old key was rotated)
+# Jenkins (using 2026 key — old key was rotated in Dec 2025)
 sudo rm -f /usr/share/keyrings/jenkins-keyring.asc
 sudo rm -f /etc/apt/sources.list.d/jenkins.list
 curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2026.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
@@ -221,34 +223,16 @@ sudo usermod -aG docker jenkins
 sudo systemctl restart docker
 sudo systemctl enable jenkins --now
 
-# Swap space (fixes low-RAM issues on t2.micro)
-sudo fallocate -l 2G /swapfile
-sudo chmod 600 /swapfile
-sudo mkswap /swapfile
-sudo swapon /swapfile
-echo '/swapfile swap swap defaults 0 0' | sudo tee -a /etc/fstab
-
-# Fix /tmp size issue (Jenkins node goes offline due to small tmpfs)
+# Fix /tmp size issue (Jenkins node goes offline on small tmpfs)
 sudo systemctl mask tmp.mount
 sudo systemctl daemon-reload
 sudo reboot
 ```
 
-### Initial Admin Password
-```bash
-sudo cat /var/lib/jenkins/secrets/initialAdminPassword
-```
-Password used during setup: `55aa59f6e3c548d4842c3132bd5012bc`
-
 ### First Freestyle Job
 - New Item → `hello-job` → Freestyle project
 - Build Step: Execute shell → `echo "Hello DevOps"`
 - Result: `Finished: SUCCESS`
-
-### Screenshot
-<!-- SS: Jenkins dashboard at http://18.234.150.115:8080 -->
-<!-- SS: hello-job Console Output showing "Hello DevOps" and SUCCESS -->
-<!-- SS: sudo systemctl status jenkins showing active (running) -->
 
 ### Q&A
 
@@ -295,11 +279,6 @@ pipeline {
 
 > Note: Build context is `.` (repo root) since Dockerfile and index.html are at root level — not `./app`.
 
-### Screenshot
-<!-- SS: Jenkins Stage View showing 3 green boxes: Clone Repository, Build Docker Image, Run Docker Container -->
-<!-- SS: Console Output showing Finished: SUCCESS -->
-<!-- SS: docker ps on EC2 showing myapp-test running -->
-
 ### Q&A
 
 **Q1. What is a Jenkins Pipeline?**
@@ -334,9 +313,8 @@ docker push awezsk/myapp:v1
 - ID: `dockerhub-creds` *(exact string required by Jenkinsfile)*
 
 ### Screenshot
-<!-- SS: Docker Hub showing awezsk/myapp repository with v1 tag -->
-<!-- SS: docker push output on EC2 showing layers uploaded and digest -->
-<!-- SS: Jenkins Credentials page showing dockerhub-creds entry -->
+
+![Part 7 Container Registry Docker Hub](https://raw.githubusercontent.com/Awezsk/Devopsassignment2/main/Part%207%20%E2%80%94%20Container%20Registry%20(Docker%20Hub).png)
 
 ### Q&A
 
@@ -370,8 +348,8 @@ kubectl get nodes
 ```
 
 ### Screenshot
-<!-- SS: kubectl get nodes showing devops-cluster node in Ready state -->
-<!-- SS: kind create cluster output -->
+
+![Part 8 Kubernetes Installation Kind on EC2](https://raw.githubusercontent.com/Awezsk/Devopsassignment2/main/Part%208%20%E2%80%94%20Kubernetes%20Installation%20(Kind%2C%20on%20EC2).png)
 
 ### Q&A
 
@@ -394,7 +372,7 @@ Kubernetes solves self-healing (automatically restarts crashed containers), auto
 ```bash
 kubectl run myapp-pod --image=awezsk/myapp:v1 --port=80
 kubectl get pods
-kubectl port-forward pod/myapp-pod 8090:80   # runs in Window A, left open
+kubectl port-forward pod/myapp-pod 8090:80   # Window A — leave running
 ```
 > Port 8090 used because 8080 is occupied by Jenkins on EC2.
 
@@ -403,14 +381,11 @@ kubectl port-forward pod/myapp-pod 8090:80   # runs in Window A, left open
 cd C:\Users\awez7\Downloads
 ssh -i devops-assignment.pem -L 8090:localhost:8090 ubuntu@18.234.150.115
 ```
-
-### Browser Access
-`http://localhost:8090` → "Welcome to DevOps Training"
+Then visit `http://localhost:8090` in the browser.
 
 ### Screenshot
-<!-- SS: kubectl get pods showing myapp-pod Running -->
-<!-- SS: kubectl port-forward output showing "Forwarding from 127.0.0.1:8090 -> 80" -->
-<!-- SS: Browser at localhost:8090 showing the webpage -->
+
+![Part 9 Pods](https://raw.githubusercontent.com/Awezsk/Devopsassignment2/main/Part%209%20%E2%80%94%20Pods.png)
 
 ### Q&A
 
@@ -465,16 +440,15 @@ spec:
 kubectl apply -f deployment.yaml
 kubectl get deployments
 kubectl get pods
-
-# Delete one pod to demonstrate self-healing
-kubectl delete pod myapp-deployment-<random-suffix>
-kubectl get pods    # replacement appears automatically
+kubectl delete pod myapp-deployment-<random-suffix>   # delete one to test self-healing
+kubectl get pods                                       # replacement appears automatically
 ```
 
-### Screenshot
-<!-- SS: kubectl get deployments showing 3/3 READY -->
-<!-- SS: kubectl get pods showing 3 myapp-deployment pods Running -->
-<!-- SS: kubectl get pods immediately after deleting one — showing replacement being created -->
+### Screenshots
+
+![Part 10 Deployments - a](https://raw.githubusercontent.com/Awezsk/Devopsassignment2/main/Part%2010%20%E2%80%94%20Deployments-a.png)
+
+![Part 10 Deployments - b](https://raw.githubusercontent.com/Awezsk/Devopsassignment2/main/Part%2010%20%E2%80%94%20Deployments-b.png)
 
 ### Q&A
 
@@ -518,19 +492,15 @@ spec:
 ```bash
 kubectl apply -f service.yaml
 kubectl get svc
-
-# Kill old port-forward (PID 5736 was the myapp-pod forward)
-kill 5736
-kubectl port-forward svc/myapp-service 8090:80   # Window A
+kill 5736                                          # free port 8090 from old pod forward
+kubectl port-forward svc/myapp-service 8090:80     # Window A
 ```
 
-### Browser Access (via SSH tunnel — same 3-window setup as Part 9)
-`http://localhost:8090` → "Welcome to DevOps Training" (now served via Service load balancer)
+### Screenshots
 
-### Screenshot
-<!-- SS: kubectl get svc showing myapp-service NodePort 80:30080 -->
-<!-- SS: kubectl port-forward svc/myapp-service showing "Forwarding from..." -->
-<!-- SS: Browser at localhost:8090 -->
+![Part 11 Services - a](https://raw.githubusercontent.com/Awezsk/Devopsassignment2/main/Part%2011%20%E2%80%94%20Services-a.png)
+
+![Part 11 Services - b](https://raw.githubusercontent.com/Awezsk/Devopsassignment2/main/Part%2011%20%E2%80%94%20Services-b.png)
 
 ### Q&A
 
@@ -551,7 +521,7 @@ Nothing breaks from the client's perspective. The Service continuously watches f
 
 ### Steps
 
-**1. Edit on laptop (VS Code):**
+**1. Edit `index.html` on laptop (VS Code):**
 ```html
 <h1>Welcome to DevOps Training - v2!</h1>
 ```
@@ -563,10 +533,9 @@ git commit -m "v2 update"
 git push
 ```
 
-**3. Pull on EC2, build v2 image:**
+**3. Pull on EC2, build and push v2:**
 ```bash
-cd ~/app
-git pull
+cd ~/app && git pull
 docker build -t awezsk/myapp:v2 .
 docker push awezsk/myapp:v2
 ```
@@ -575,26 +544,25 @@ docker push awezsk/myapp:v2
 ```bash
 kubectl set image deployment/myapp-deployment myapp=awezsk/myapp:v2
 kubectl rollout status deployment/myapp-deployment
-kubectl get pods    # watch old v1 pods terminate, new v2 pods start
+kubectl get pods
 ```
 
-### Screenshot
-<!-- SS: docker push awezsk/myapp:v2 output -->
-<!-- SS: kubectl rollout status showing "successfully rolled out" -->
-<!-- SS: kubectl get pods showing new pods replacing old ones -->
-<!-- SS: Browser refreshed showing "v2" text -->
-<!-- SS: Docker Hub showing both v1 and v2 tags -->
+### Screenshots
+
+![Part 12 Rolling Updates - a](https://raw.githubusercontent.com/Awezsk/Devopsassignment2/main/Part%2012%20%E2%80%94%20Rolling%20Updates-a.png)
+
+![Part 12 Rolling Updates - b](https://raw.githubusercontent.com/Awezsk/Devopsassignment2/main/Part%2012%20%E2%80%94%20Rolling%20Updates-b.png)
 
 ### Q&A
 
 **Q1. What is a rolling update?**
-A rolling update is a deployment strategy that replaces old Pod replicas with new ones gradually — one (or a few) at a time — rather than stopping all instances simultaneously and starting fresh. Kubernetes creates new Pods with the updated image, waits for them to become healthy, then terminates old ones, cycling through until all replicas are updated.
+A rolling update is a deployment strategy that replaces old Pod replicas with new ones gradually — one at a time — rather than stopping all instances simultaneously. Kubernetes creates new Pods with the updated image, waits for them to become healthy, then terminates old ones, cycling through until all replicas are updated.
 
 **Q2. Why is it safer?**
-Because working replicas of the old version keep serving live traffic throughout the entire update process, meaning users experience no downtime. If the new version has a bug, only a fraction of traffic hits it before the rollout is paused or reversed — unlike a big-bang deployment where all instances go down or break simultaneously.
+Working replicas of the old version keep serving live traffic throughout the entire update process, meaning users experience no downtime. If the new version has a bug, only a fraction of traffic hits it before the rollout is paused or reversed — unlike a big-bang deployment where all instances fail simultaneously.
 
 **Q3. What is zero-downtime deployment?**
-Zero-downtime deployment means the Service always has at least one healthy Pod behind it at every moment during an update. Since Kubernetes adds new v2 Pods and confirms they are Running and Ready before removing v1 Pods, the service never drops below the minimum healthy count, making it invisible to end users.
+Zero-downtime deployment means the Service always has at least one healthy Pod behind it at every moment during an update. Since Kubernetes adds new v2 Pods and confirms they are Running and Ready before removing v1 Pods, the service never drops below the minimum healthy count, making the update invisible to end users.
 
 ---
 
@@ -614,9 +582,8 @@ kubectl rollout status deployment/myapp-deployment
 ```
 
 ### Screenshot
-<!-- SS: kubectl get pods showing ImagePullBackOff on bad image -->
-<!-- SS: kubectl rollout undo output -->
-<!-- SS: kubectl rollout status showing "successfully rolled out" after rollback -->
+
+![Part 13 Rollback](https://raw.githubusercontent.com/Awezsk/Devopsassignment2/main/Part%2013%20%E2%80%94%20Rollback.png)
 
 ### Q&A
 
@@ -642,7 +609,7 @@ sudo chown -R jenkins:jenkins /var/lib/jenkins/.kube
 sudo -u jenkins kubectl get nodes
 ```
 
-### Step 2: Full Jenkinsfile (5 Stages)
+### Step 2: Full 5-Stage Jenkinsfile
 Updated in existing `myapp-pipeline` job via Jenkins UI → Configure:
 
 ```groovy
@@ -703,13 +670,6 @@ pipeline {
 }
 ```
 
-### Screenshot
-<!-- SS: Jenkins Stage View showing all 5 green boxes -->
-<!-- SS: Console Output showing kubectl rollout status "successfully rolled out" -->
-<!-- SS: Console Output showing Finished: SUCCESS -->
-<!-- SS: kubectl get pods -o wide output showing updated pods -->
-<!-- SS: Browser showing app after automated deployment -->
-
 ### Q&A
 
 **Q1. How does Jenkins communicate with Kubernetes?**
@@ -734,7 +694,7 @@ Manual deployments carry risks of human error (wrong tag, skipped step), lack of
 | Jenkins UI not reachable (timeout) | Security Group IP was stale after IP change | Re-selected "My IP" in Security Group inbound rules for port 8080 |
 | Jenkins node offline | `/tmp` tmpfs only 454 MB; Jenkins threshold was 1 GB | Masked `tmp.mount` and rebooted so `/tmp` uses real disk space |
 | `kubectl port-forward` port conflict | Old port-forward (PID 5736) still running on 8090 | `kill 5736` to free the port before starting new forward |
-| SSH tunnel not binding | Used wrong `.pem` filename (`devops-key.pem` vs `devops-assignment.pem`) | Used correct filename `devops-assignment.pem` from Downloads folder |
+| SSH tunnel not binding | Wrong `.pem` filename (`devops-key.pem` vs `devops-assignment.pem`) | Used correct filename `devops-assignment.pem` from Downloads folder |
 | `--record` flag error in kubectl | Flag removed in current kubectl versions | Dropped `--record` from `kubectl set image` command |
 
 ---
@@ -742,10 +702,11 @@ Manual deployments carry risks of human error (wrong tag, skipped step), lack of
 ## Deliverables Checklist
 
 - [x] `Dockerfile` — at repo root (GitHub: Awezsk/Devopsassignment2)
-- [x] `Jenkinsfile` — 5-stage pipeline in Jenkins UI
+- [x] `index.html` — served by nginx container
 - [x] `~/k8s/deployment.yaml` — 3-replica Deployment on EC2
 - [x] `~/k8s/service.yaml` — NodePort Service on EC2
+- [x] Jenkinsfile — 5-stage pipeline in Jenkins UI
 - [x] Docker Hub image pushed — `awezsk/myapp:v1`, `awezsk/myapp:v2`
 - [x] All Q&A answered (Parts 1–14)
-- [x] Screenshots taken for each part (placeholders above)
+- [x] Screenshots attached for all parts
 - [x] Architecture diagram (see top of document)
